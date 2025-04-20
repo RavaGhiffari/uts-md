@@ -101,7 +101,8 @@ def main():
         }])
     with st.expander("Data yang digunakan"):
         st.dataframe(user_input)
-    # user input
+    
+    #Button
     if st.button('Classify'):
         try:
             X_processed = preprocessor.transform(user_input)
@@ -113,7 +114,8 @@ def main():
             if 'label_encoder' in pipeline:
                 pred_label = pipeline['label_encoder'].inverse_transform([pred])[0]
                 classes = pipeline['label_encoder'].classes_
-            else:
+                 
+            else:           
                 pred_label = "Cancelled" if pred == 1 else "Not Cancelled"
                 classes = ["Not Canceled", "Canceled"]
         
@@ -136,7 +138,7 @@ def main():
             st.bar_chart(proba_df.set_index('Class'))
         
         # event yang mungkin dari prediksi
-            if pred_label == "Not Cancelled":  # Not Cancelled
+            if pred == 1:  # Not Cancelled
                 st.success("This booking is likely to be honored")
             else:
                 st.error("This booking has high cancellation risk")
@@ -146,4 +148,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
