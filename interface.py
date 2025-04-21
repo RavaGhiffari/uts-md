@@ -131,7 +131,8 @@ def main():
             'no_of_special_requests':special_req
         }])
         #Button
-        st.dataframe(user_input)
+        with st.expander("## Data yang dipakai"):
+            st.dataframe(user_input)
         try:
             X_processed = preprocessor.transform(user_input)
         
@@ -177,7 +178,13 @@ def main():
                     st.write(f"- Lead Time Tinggi (**{lead_time} hari**)")
                 if prev_cancel > 0:
                     st.write(f"- Riwayat Cancel (**{prev_cancel}x**)")
+                if avg_price_room > 200:
+                    st.write(f"- Harga kamar yang terlalu tinggi (**${avg_price_room:.2f}**) ")
             
+            if st.button("Start New Prediction", type="primary"):
+                reset_form()
+                st.rerun()
+                    
         except Exception as e:
             st.error(f"Error during prediction: {str(e)}")    
 
