@@ -5,18 +5,36 @@ import joblib as jb
 import matplotlib.pyplot as plt
 
 def main():
-    st.set_page_config(page_title="Hotel Booking Status Predictor")
-    st.title("✅ Hotel Booking Status Predictor")
+    st.set_page_config(page_title="Hotel Booking Status Predictor", page_icon="favicon.ico")
+    st.title("Hotel Booking Status Predictor")
 
     pipeline = jb.load('dataset_B_pipeline.joblib')
     preprocessor = pipeline['preprocessor']
     model = pipeline['best_model'] #RF
-    
-    with st.sidebar:
-        st.title("About")
-        col = st.columns(1)
-        with col:
-            st.write('Aplikasi ini menggunakan model RandomForest')
+
+    #design sidebar
+    st.sidebar.header("Tentang Aplikasi")
+    st.sidebar.markdown(
+        """
+        <div style="background-color:#6986e3; padding: 17px; border-radius: 10px; border: 1px solid #f1f5f6;min-width:100px">
+            <p style="color:#eef5fc; font-size: 14px;">
+                Aplikasi ini menggunakan model machine learning <b>RandomForest</b> untuk memprediksi status pemesanan hotel — 
+                apakah <b style="color:#ffb3b3;">dibatalkan</b> atau <b style="color:#c2f0c2;">tidak dibatalkan</b>, 
+                berdasarkan detail pemesanan yang diinput oleh pengguna.
+            </p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+    st.sidebar.markdown("## 📌 Informasi Tambahan")
+    st.sidebar.markdown("> 📅 Dataset: Data Pemesanan Hotel (2017–2018 Season)")
+    st.sidebar.markdown("> 🧠 Model: RandomForestClassifier")
+    st.sidebar.markdown("> 📊 Akurasi: ~89% pada data uji")
+    st.sidebar.markdown("---")
+    st.sidebar.markdown("## 👨‍💻 Author")
+    st.sidebar.markdown("Nama: **Rava Ghiffari**")
+    st.sidebar.markdown("[GitHub](https://github.com/RavaGhiffari)")
+    st.sidebar.caption("© 2025 - Dibuat untuk UTS Model Deployment.")
 
     # Initialize session state
     if 'reset_form' not in st.session_state:
@@ -46,7 +64,7 @@ def main():
             'prediction_done': False
         })
 
-    st.write("Aplikasi ini memungkinkan anda untuk menjalankan prediksi untuk suatu tipe pemesanan dengan preferensi customer yang beragam")
+    st.write("Aplikasi ini memungkinkan anda untuk menjalankan prediksi dari suatu tipe pemesanan dengan preferensi customer yang beragam")
     st.write("Contoh Skema:")
     tc1, tc2 = st.columns(2)
     s = st.session_state
@@ -96,21 +114,20 @@ def main():
         col1, col2 = st.columns(2)
 
         with col1:
-
             adults = st.number_input("Adult Total",1,3, key="adults")
             child = st.number_input("Child Total", 0,2, key="child")
             weekend_nights = st.slider("Weekend Nights", 0, 7, key="weekend_nights")
             week_nights = st.slider("Week Nights", 0,17, key="week_nights")
             meal_type = st.selectbox("Meal plan type", ['Meal Plan 1', 'Meal Plan 2', 'Meal Plan 3', 'Not Selected'], key="meal_type")
-            req_park = st.selectbox("Required parking space", [0,1], key="req_park")
+            req_park = st.radio("Required parking space", [1, 0], format_func= lambda x: 'Yes' if x == 1 else 'No' ,key="req_park")
             room_type = st.selectbox("Room type",['Room Type 1', 'Room Type 2', 'Room Type 3', 'Room Type 4', 'Room Type 5', 'Room Type 6', 'Room Type 7'], key="room_type")
-            lead_time = st.number_input('Lead time', 0,443, key="lead_time")
         
         with col2:
+            lead_time = st.number_input('Lead time', 0,443, key="lead_time")
             arrival_year = st.selectbox('Arrival year', [2017,2018], key="arrival_year")
             arrival_month = st.number_input("Arrival month", 1,12,key="arrival_month")
             market_seg = st.selectbox('Market Segment Type', ['Aviation', 'Complementary', 'Corporate', 'Offline', 'Online'], key="market_seg")
-            repeated_guest = st.selectbox("Repeated Guest", [0,1], key="repeated_guest")
+            repeated_guest = st.radio("Repeated Guest", [1, 0],format_func= lambda x: 'Yes' if x == 1 else 'No', key="repeated_guest")
             prev_cancel = st.number_input('Previous Cancellations', 0,13, key = "prev_cancel")
             prev_books_not_cancel = st.number_input('Previouse bookings Not Cancelled', 0,58, key="prev_books_not_cancel")
             avg_price_room = st.number_input('Average Price per Room', 0.0,540.0, key="avg_price_room")
