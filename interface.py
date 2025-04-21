@@ -5,12 +5,18 @@ import joblib as jb
 import matplotlib.pyplot as plt
 
 def main():
-    st.title("Classifier App")
-    st.write("### Hotel Booking Status Predictor")
+    st.set_page_config(page_title="Hotel Booking Status Predictor")
+    st.title("✅ Hotel Booking Status Predictor")
 
     pipeline = jb.load('dataset_B_pipeline.joblib')
     preprocessor = pipeline['preprocessor']
     model = pipeline['best_model'] #RF
+    
+    with st.sidebar:
+        st.title("About")
+        col = st.columns(1)
+        with col:
+            st.write('Aplikasi ini menggunakan model RandomForest')
 
     # Initialize session state
     if 'reset_form' not in st.session_state:
@@ -40,12 +46,13 @@ def main():
             'prediction_done': False
         })
 
-    st.write("## Masukkan Details dari tipe pemesanan yang ingin dioperasikan")
+    st.write("Aplikasi ini memungkinkan anda untuk menjalankan prediksi untuk suatu tipe pemesanan dengan preferensi customer yang beragam")
+    st.write("Contoh Skema:")
     tc1, tc2 = st.columns(2)
     s = st.session_state
 
     with tc1:
-        if st.button("🔴 High Cancellation Risk", help="Menunjukkan skema booking yang kemungkinan gagal(Canceled)"):
+        if st.button("🔴 High Cancellation Risk", help="Menunjukkan skema booking yang kemungkinan gagal (Canceled)"):
             s.adults = 1
             s.child = 0
             s.weekend_nights = 1
@@ -64,7 +71,7 @@ def main():
             s.special_req = 0
     
     with tc2:
-        if st.button("🟢 Low Cancellation Risk", help="Menunjukkan skema booking yang mungkin sukses(Not Canceled)"):
+        if st.button("🟢 Low Cancellation Risk", help="Menunjukkan skema booking yang mungkin sukses (Not Canceled)"):
             s.adults = 2
             s.child = 0
             s.weekend_nights = 1
@@ -97,9 +104,9 @@ def main():
             meal_type = st.selectbox("Meal plan type", ['Meal Plan 1', 'Meal Plan 2', 'Meal Plan 3', 'Not Selected'], key="meal_type")
             req_park = st.selectbox("Required parking space", [0,1], key="req_park")
             room_type = st.selectbox("Room type",['Room Type 1', 'Room Type 2', 'Room Type 3', 'Room Type 4', 'Room Type 5', 'Room Type 6', 'Room Type 7'], key="room_type")
-        with col2:
-
             lead_time = st.number_input('Lead time', 0,443, key="lead_time")
+        
+        with col2:
             arrival_year = st.selectbox('Arrival year', [2017,2018], key="arrival_year")
             arrival_month = st.number_input("Arrival month", 1,12,key="arrival_month")
             market_seg = st.selectbox('Market Segment Type', ['Aviation', 'Complementary', 'Corporate', 'Offline', 'Online'], key="market_seg")
@@ -141,37 +148,35 @@ def main():
             pred_proba = model.predict_proba(X_processed)[0]
         
             if 'label_encoder' in pipeline:
-                pred_label = "Canceled" if pred == 0 else "Not Canceled"
-                classes = ["Not Canceled", "Canceled"]
+                class_names = pipeline['label_encoder'].classes_
+                pred_label = class_names[pred]
+                if pred_label == "Not_Canceled":
+                    pred_label = "Not Canceled"
             else:           
-                pred_label = pipeline['label_encoder'].inverse_transform([pred])[0]
-                classes = pipeline['label_encoder'].classes_
+                class_names = ["Canceled", "Not Canceled"]
+                pred_label = class_names[pred]
 
             st.success("🎯 Prediction Complete!")
+            st.write("### Hasil Prediksi:")
 
         # hasil secara spesifik
-            st.write("### Prediction Results:")
             col1, col2 = st.columns(2)
-        
             with col1:
-                st.metric("Prediction", pred_label)
-        
+                st.metric("Prediksi", pred_label)
             with col2:
                 st.metric("Confidence", f"{max(pred_proba)*100:.1f}%")
         
         # Probabilitas chart
             st.write("#### Probability Breakdown:")
             proba_df = pd.DataFrame({
-                'Class': classes,
+                'Class': ['Canceled', 'Not Canceled'],
                 'Probability': pred_proba
             })
             st.bar_chart(proba_df.set_index('Class'))
         
         # event yang mungkin dari prediksi
-            if pred == 1:  # Not Cancelled
-                st.success("✅ This booking is likely to be honored")
-            else:
-                st.error("⚠️ This booking has high cancellation risk")
+            if pred_label == 'Canceled':
+                st.error("⚠️ Pemesanan ini berisiko tinggi dibatalkan")
                 st.write("#### Prediction details:")
                 st.write("Faktor Penyebab:")
                 if lead_time > 100:
@@ -180,6 +185,8 @@ def main():
                     st.write(f"- Riwayat Cancel (**{prev_cancel}x**)")
                 if avg_price_room > 200:
                     st.write(f"- Harga kamar yang terlalu tinggi (**${avg_price_room:.2f}**) ")
+            else:
+                st.success(f"✅ Pesanan ini hampir pasti akan dikonfirmasi ({max(pred_proba)*100:.1f}%)")
             
             if st.button("Start New Prediction", type="primary"):
                 reset_form()
