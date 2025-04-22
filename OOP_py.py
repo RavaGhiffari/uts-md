@@ -38,7 +38,7 @@ class HotelBookingModelTrainer:
         num_cols = self.X.select_dtypes(include=['int64', 'float64']).columns.tolist()
         cat_cols = self.X.select_dtypes(include=['object']).columns.tolist()
 
-        self.X[num_cols] = self.X[num_cols].fillna(self.X[num_cols].median()) #Pembeda hasil oop ipynb dan oop py
+        self.X[num_cols] = self.X[num_cols].fillna(self.X[num_cols].median()) 
         self.X[cat_cols] = self.X[cat_cols].fillna(self.X[cat_cols].mode().iloc[0])
 
         self.preprocessor = ColumnTransformer(
